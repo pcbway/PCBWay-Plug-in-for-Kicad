@@ -1,4 +1,4 @@
-# PCBWay Plugin for Kicad
+# PCBWay Plug-in for Kicad
 
 ### Send your layout to PCBWay for instant production with just one click.
 
