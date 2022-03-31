@@ -2,9 +2,9 @@
 
 ### Send your layout to PCBWay for instant production with just one click.
 
-Click this plugin for high-quality prototyping and assembly services, PCBWay will commit to meeting your needs to the greatest extent.
+Click this plugin for high quality prototyping and assembly services, PCBWay will commit to meeting your needs to the greatest extent.
 
-When you click PCBWay Plugin, we will export these files in your project：
+When you click PCBWay Plug-in, we will export these files in your project：
 1.	Gerber files in correct format for production
 2.	IPC-Netlist file
 3.	Bom-file that includes all information of components
