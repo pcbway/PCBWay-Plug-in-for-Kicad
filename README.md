@@ -2,13 +2,13 @@
 
 ### Send your layout to PCBWay for instant production with just one click.
 
-Click this plugin if you want prototyping and assembly service of high-quality, they will be achieved with PCBWay in a very short time.
+Click this plugin for high-quality prototyping and assembly services, PCBWay will commit to meeting your needs to the greatest extent.
 
-By using the combination of KiCad and PCBWay, you can do the followings：
-1.	Upload Gerber files to PCBWay in seconds for production
-2.	Use IPC-Netlist file to improve your design for production.
-3.	Use Bom files to organize components information for assembly.
-4.	Use Pick and Place-file to assist assembly.
+When you click PCBWay Plugin, we will export these files in your project：
+1.	Gerber files in correct format for production
+2.	IPC-Netlist file
+3.	Bom-file that includes all information of components
+4.	Pick and Place-file used in assembly
 
 You can click "Save to Cart"  to place an order immediately after uploading the files( usually only takes a few seconds), our engineers will double check the files before the production.
 
@@ -20,15 +20,27 @@ Just open the "Plugin and Content Manager" from the KiCad main menu an install t
 
 
 ### Manual installation
-If you prefer the latest version, please download the latest ZIP file from  https://github.com/pcbway/PCBWay-Plug-in-for-Kicad, then open the "Plugin and Content Manager" from the main window of KiCad and install the ZIP file via "Install from File".
+You can also download the latest ZIP file from  https://github.com/pcbway/PCBWay-Plug-in-for-Kicad, then open the "Plugin and Content Manager" from the main window of KiCad and install the ZIP file via "Install from File".
 ![install pcbway plugin](https://user-images.githubusercontent.com/20063837/160970891-4971cb1a-a36a-45bc-b219-93924f0ff070.png)
 
 
 
-### How to automatically assign components(bom)
+### About Bom
 
-We support the automated matching of parts. But the MPN (part number) information is necessary.
-Just add a property named "MPN" to your schematic symbol properties and use the MPN of the part as value.
+We can get all information of components used in your design. In order to speed up the quotation of components, we need this information:
+1. Designator (necessary)
+2. Quantity (necessary)
+3. MPN/Part Number (necessary)
+4. Package/Footprint (necessary)
+5. Manufacturer (optional)
+6. Description/value (optional)
+
+You just need to add the properties in your schematic like the picture shows:
+![bom](https://user-images.githubusercontent.com/20063837/160999527-e0a50238-3468-44be-b691-667ab8e8fef1.png)
+
+
+
+
 
 
 ### About PCBWay
