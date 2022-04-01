@@ -48,7 +48,8 @@ PCBWay is a Chinese company specializing in PCB industry, dedicated to reducing 
 
 As a sponsor of KiCad, we will always support its development.
 
-![pcbway and kicad](https://user-images.githubusercontent.com/20063837/160807492-241eaa2b-b97f-4cbc-9fa0-f5f96eafb018.png)
+![pcbway and kicad](https://user-images.githubusercontent.com/20063837/161211870-b4a46c17-2e1c-45b4-bfe7-2ab97ade157d.png)
+
 
 
 
