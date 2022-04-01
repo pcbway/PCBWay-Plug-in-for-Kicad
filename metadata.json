@@ -1,8 +1,8 @@
 {
     "$schema": "https://go.kicad.org/pcm/schemas/v1",
-    "name": "PCBWay Plug-in for Kicad",
-    "description": "Start prototype and assembly by sending files to PCBWay.",
-    "description_full": "PCBWay Plug-in for Kicad\nIf you want to get prototype and assembly services of high-quality, click this plugin and you can achieve this goal with PCBWay in a very short time.\nUsing the combination of KiCad and PCBWay, you can achieve the followings:\n\n1. Upload Gerber files to PCBWay in seconds for production\n2. Use IPC-Netlist file to improve your design for production.\n3. Use Bom files to organize components information for assembly.\n4. Pick and Place-file.\n\nPCBWay is a Chinese company focused on the PCB industry, dedicated to reducing customers' worries by providing one-stop service. We have an extremely high production efficiency, ordinary PCBs only takes 24 hours to produce. And the material we use is TG 150-160 with the price as low as $5/10pcs. Meanwhile, PCBWay also offer remarkable after-sales service, which can solve any minor problems you may encounter. We are well-received among our customers, give us a chance and you will surely get a satisfactory result.",
+    "name": "PCBWay Plug-in for KiCad",
+    "description": "Start prototype and assembly by sending files to PCBWay with just one click.",
+    "description_full": "Click this plugin for high quality prototyping and assembly services, PCBWay will commit to meeting your needs to the greatest extent.\n\nWhen you click PCBWay Plug-in button, we will export these files in your project:\n\n1. Gerber files in correct format for production\n2. IPC-Netlist file\n3. Bom-file that includes all information of components (please note designator, quantity, MPN/part number, package/footprint are necessary)\n4. Pick and Place-file used in assembly\n\nYou can click \"Save to Cart\" to place an order immediately after uploading the files ( usually only takes a few seconds), our engineers will double check the files before the production.\n\nAbout PCBWay:\n\nPCBWay is a Chinese company specializing in PCB prototyping and assembly, devotes to offer one-stop service. The build-time for standard PCBs is 24hrs. Our upgraded material with TG150-160 costs as low as $5/10pcs while our remarkable after-sale services are standing by for any questions you may encounter. As a sponsor of KiCad, we will always support its development.",
     "identifier": "com.github.pcbway.PCBWay-Plug-in-for-Kicad",
     "type": "plugin",
     "author": {
@@ -23,7 +23,7 @@
     },
     "versions": [
         {
-            "version": "1.0",
+            "version": "0.1.2",
             "status": "testing",
             "kicad_version": "6.00"
             

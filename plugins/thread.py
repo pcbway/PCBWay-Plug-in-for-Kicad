@@ -3,15 +3,11 @@ import webbrowser
 import shutil
 import json
 import requests
-import re
 import wx
-import time
 import tempfile
 from threading import Thread
 from .result_event import *
 from .config import *
-
-#from requests_toolbelt.multipart import encoder
 
 
 class PCBWayThread(Thread):
@@ -21,20 +17,14 @@ class PCBWayThread(Thread):
         self.start()
 
     def run(self):
+
         temp_dir = tempfile.mkdtemp()
         _, temp_file = tempfile.mkstemp()
         board = pcbnew.GetBoard()
         title_block = board.GetTitleBlock()
-        self.report(10)
-        match = re.match(
-            '^PCBWay Project ID: ([A-Z]{8})$',
-            title_block.GetComment(commentLineIdx))
-        if match:
-            project_id = match.group(1)
-        else:
-            project_id = False
 
-        # Override a few design parameters as our CAM takes care of this
+        self.report(5)
+
         settings = board.GetDesignSettings()
         settings.m_SolderMaskMargin = 0
         settings.m_SolderMaskMinWidth = 0
@@ -55,7 +45,7 @@ class PCBWayThread(Thread):
         popt.SetSubtractMaskFromSilk(False)
         popt.SetDrillMarksType(0)  # NO_DRILL_SHAPE
 
-        self.report(15)
+        self.report(20)
         for layer_info in plotPlan:
             if board.IsLayerEnabled(layer_info[1]):
                 pctl.SetLayer(layer_info[1])
@@ -67,11 +57,9 @@ class PCBWayThread(Thread):
 
         pctl.ClosePlot()
 
-        # Write excellon drill files
-        self.report(20)
+        self.report(25)
         drlwriter = pcbnew.EXCELLON_WRITER(board)
 
-        # mirrot, header, offset, mergeNPTH
         drlwriter.SetOptions(
             False,
             True,
@@ -80,13 +68,11 @@ class PCBWayThread(Thread):
         drlwriter.SetFormat(False)
         drlwriter.CreateDrillandMapFilesSet(pctl.GetPlotDirName(), True, False)
 
-        # # Write netlist to enable Smart Tests
-        self.report(25)
+        self.report(30)
         netlist_writer = pcbnew.IPC356D_WRITER(board)
         netlist_writer.Write(os.path.join(temp_dir, netlistFilename))
 
-        # # Export component list
-        self.report(30)
+        self.report(35)
         components = []
         if hasattr(board, 'GetModules'):
             footprints = list(board.GetModules())
@@ -129,60 +115,37 @@ class PCBWayThread(Thread):
         with open((os.path.join(temp_dir, componentsFilename)), 'w') as outfile:
             json.dump(components, outfile)
 
-        # # Create ZIP file
         temp_file = shutil.make_archive(temp_file, 'zip', temp_dir)
         files = {'upload[file]': open(temp_file, 'rb')}
 
         upload_url = baseUrl + '/Common/KiCadUpFile/'
-        try:
-            self.report(40)
-            if project_id:
-                data = {}
-                data['upload_url'] = baseUrl + '/Common/KiCadUpFile/'
-                data['project_id'] = project_id
-            else:
-                rsp = requests.get(baseUrl + '/Common/NewKiCad/')
-                data = json.loads(rsp.content)
-                if not title_block.GetComment(commentLineIdx):
-                    title_block.SetComment(
-                        commentLineIdx,
-                        'PCBWay Project ID: ' +
-                        data['project_id'])
+        
+        self.report(45)
+        
+        rsp = requests.post(
+            upload_url, files=files, data={'boardWidth':boardWidth,'boardHeight':boardHeight,'boardLayer':boardLayer})
+        
+        urls = json.loads(rsp.content)
 
-            rsp = requests.post(
-                upload_url, files=files, data={'project_id':data['project_id'],'boardWidth':boardWidth,'boardHeight':boardHeight,'boardLayer':boardLayer})
-            
-            urls = json.loads(rsp.content)
+        readsofar = 0
+        totalsize = os.path.getsize(temp_file)
+        with open(temp_file, 'rb') as file:
+            while True:
+                data = file.read(10)
+                if not data:
+                    break
+                readsofar += len(data)
+                percent = readsofar * 1e2 / totalsize
+                self.report(45 + percent / 1.8)
 
-            readsofar = 0
-            totalsize = os.path.getsize(temp_file)
-            with open(temp_file, 'rb') as file:
-                while True:
-                    data = file.read(10)
-                    if not data:
-                        break
-                    readsofar += len(data)
-                    percent = readsofar * 1e2 / totalsize
-                    self.report(40 + percent / 1.7)
-
-            # progress = 0
-            # while progress < 100:
-            #     time.sleep(pollingInterval)
-            #     progress = json.loads(
-            #         requests.get(
-            #             urls['callback']).content)['progress']
-            #     self.report(40 + progress / 1.7)
-
-            webbrowser.open(urls['redirect'])
-            self.report(-1)
-        except Exception as e:
-            webbrowser.open(repr(e))
+        webbrowser.open(urls['redirect'])
+        self.report(-1)
 
     def report(self, status):
         wx.PostEvent(self.wxObject, ResultEvent(status))
         
     def getMpnFromFootprint(self, f):
-        keys = ['mpn', 'MPN', 'Mpn', 'AISLER_MPN']
+        keys = ['mpn', 'MPN', 'Mpn', 'PCBWay_MPN']
         for key in keys:
             if f.HasProperty(key):
                 return f.GetProperty(key)

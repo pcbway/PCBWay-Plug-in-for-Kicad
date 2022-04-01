@@ -2,10 +2,8 @@ import pcbnew
 
 baseUrl = 'https://www.pcbway.com'
 #baseUrl = 'http://en.pcbway.com'
-commentLineIdx = 3
-pollingInterval = 0.5
-netlistFilename = 'netlist.ipc'
-componentsFilename = 'components.json'
+netlistFilename = 'PCBWay_netlist.ipc'
+componentsFilename = 'PCBWay_components.json'
 plotPlan = [
     ("F.Cu", pcbnew.F_Cu, "Top Layer"),
     ("B.Cu", pcbnew.B_Cu, "Bottom Layer"),

@@ -45,9 +45,9 @@ class KiCadToPCBWayForm(wx.Frame):
 
 class PCBWayPlugin(pcbnew.ActionPlugin):
     def __init__(self):
-        self.name = "PCBWay Plug-in for Kicad"  # 插件名称
+        self.name = "PCBWay Plug-in for KiCad"  # 插件名称
         self.category = "Manufacturing"  # 描述性类别名称
-        self.description = "Start prototype and assembly by sending files to PCBWay."  # 对插件及其功能的描述
+        self.description = "Start prototype and assembly by sending files to PCBWay with just one click."  # 对插件及其功能的描述
         self.pcbnew_icon_support = hasattr(self, "show_toolbar_button")
         self.show_toolbar_button = True  # 可选，默认为 False
         self.icon_file_name = os.path.join(
