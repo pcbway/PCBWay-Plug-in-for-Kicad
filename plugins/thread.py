@@ -1,3 +1,6 @@
+#copyright  Aisler and licensed under the MIT license.
+#https://opensource.org/licenses/MIT 
+
 import os
 import webbrowser
 import shutil
