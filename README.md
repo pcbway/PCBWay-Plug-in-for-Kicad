@@ -44,7 +44,7 @@ You just need to add the properties in your schematic like the picture shows:
 
 
 ### About PCBWay
-PCBWay is a Chinese company specializing in PCB industry, dedicated to reducing customers' worries by providing one-stop service. We have extremely high production efficiency, ordinary PCBs only take 24 hours to produce. And the material we use is TG 150-160 with the price as low as $5/10pcs. Meanwhile, PCBWay also offer remarkable after-sales service which can solve any minor problems you may encounter. Give us a chance and we will give you back a satisfactory result.
+PCBWay is a Chinese company specializing in PCB prototyping and assembly, devotes to offer one-stop service. The build-time for standard PCBs is 24hrs. Our upgraded material with TG150-160 costs as low as $5/10pcs while our remarkable after-sale services are standing by for any questions you may encounter. Give us a chance and we will give you back a satisfactory result.
 
 As a sponsor of KiCad, we will always support its development.
 
