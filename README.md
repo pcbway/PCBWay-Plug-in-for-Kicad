@@ -51,6 +51,10 @@ As a sponsor of KiCad, we will always support its development.
 ![pcbway and kicad](https://user-images.githubusercontent.com/20063837/161211870-b4a46c17-2e1c-45b4-bfe7-2ab97ade157d.png)
 
 
+This Plug-In is provided by [AISLER](https://aisler.net) (https://aisler.net)
+
+![aisler](https://aisler.net/logos/logo_medium.png)
+
 
 
 
