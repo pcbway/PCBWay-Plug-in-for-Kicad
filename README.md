@@ -17,6 +17,7 @@ You can click "Save to Cart"  to place an order immediately after uploading the 
 
 ### Installation from the official KiCad repositories
 Just open the "Plugin and Content Manager" from the KiCad main menu an install the "PCBWay Plug-in for KiCad" plugin from the selection list.
+![plugin for kicad](https://user-images.githubusercontent.com/20063837/168219163-f6ccf822-848e-424a-8691-02d67da7b4cb.png)
 
 
 ### Manual installation
