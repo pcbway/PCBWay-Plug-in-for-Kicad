@@ -1,5 +1,6 @@
-#copyright  Aisler and licensed under the MIT license.
-#https://opensource.org/licenses/MIT 
+# Copyright AISLER B.V., https://aisler.net
+# Licensed under the MIT license.
+# https://opensource.org/licenses/MIT 
 
 import os
 import webbrowser
