@@ -20,11 +20,12 @@ class PCBWayThread(Thread):
         self.start()
 
     def run(self):
-
+        
         temp_dir = tempfile.mkdtemp()
         _, temp_file = tempfile.mkstemp()
         board = pcbnew.GetBoard()
         title_block = board.GetTitleBlock()
+        p_name = board.GetFileName()
 
         self.report(5)
 
@@ -42,7 +43,8 @@ class PCBWayThread(Thread):
         popt.SetScale(1)
         popt.SetMirror(False)
         popt.SetUseGerberAttributes(True)
-        popt.SetExcludeEdgeLayer(True)
+        if hasattr(popt, "SetExcludeEdgeLayer"):
+            popt.SetExcludeEdgeLayer(True)
         popt.SetUseGerberProtelExtensions(False)
         popt.SetUseAuxOrigin(True)
         popt.SetSubtractMaskFromSilk(False)
@@ -70,18 +72,18 @@ class PCBWayThread(Thread):
             False)
         drlwriter.SetFormat(False)
         drlwriter.CreateDrillandMapFilesSet(pctl.GetPlotDirName(), True, False)
-
+        
         self.report(30)
         netlist_writer = pcbnew.IPC356D_WRITER(board)
         netlist_writer.Write(os.path.join(temp_dir, netlistFilename))
-
+        
         self.report(35)
         components = []
         if hasattr(board, 'GetModules'):
             footprints = list(board.GetModules())
         else:
             footprints = list(board.GetFootprints())
-
+        
         for i, f in enumerate(footprints):
             try:
                 footprint_name = str(f.GetFPID().GetFootprintName())
@@ -93,32 +95,36 @@ class PCBWayThread(Thread):
                 pcbnew.B_Cu: 'bottom',
             }.get(f.GetLayer())
 
-            mount_type = {
-                0: 'smt',
-                1: 'tht',
-                2: 'smt'
-            }.get(f.GetAttributes())
+            attrs = f.GetAttributes()
+            parsed_attrs = self.parse_attrs(attrs)
+
+            mount_type = 'smt' if parsed_attrs['smd'] else 'tht'
+            placed = not parsed_attrs['not_in_bom']
+
+            rotation = f.GetOrientation().AsDegrees() if hasattr(f.GetOrientation(), 'AsDegrees') else f.GetOrientation() / 10.0
+            designator = f.GetReference()
 
             components.append({
                 'pos_x': (f.GetPosition()[0] - board.GetDesignSettings().GetAuxOrigin()[0]) / 1000000.0,
                 'pos_y': (f.GetPosition()[1] - board.GetDesignSettings().GetAuxOrigin()[1]) * -1.0 / 1000000.0,
-                'rotation': f.GetOrientation() / 10.0,
+                'rotation': rotation,
                 'side': layer,
-                'designator': f.GetReference(),
+                'designator': designator,
                 'mpn': self.getMpnFromFootprint(f),
                 'pack': footprint_name,
                 'value': f.GetValue(),
-                'mount_type': mount_type
+                'mount_type': mount_type,
+                'place': placed
             })
-
-        boardWidth = pcbnew.Iu2Millimeter(board.GetBoardEdgesBoundingBox().GetWidth())
-        boardHeight = pcbnew.Iu2Millimeter(board.GetBoardEdgesBoundingBox().GetHeight())
-        boardLayer = board.GetCopperLayerCount()
         
+        boardWidth = pcbnew.ToMM(board.GetBoardEdgesBoundingBox().GetWidth())
+        boardHeight = pcbnew.ToMM(board.GetBoardEdgesBoundingBox().GetHeight())
+        if hasattr(board, 'GetCopperLayerCount'):
+            boardLayer = board.GetCopperLayerCount()
         with open((os.path.join(temp_dir, componentsFilename)), 'w') as outfile:
             json.dump(components, outfile)
 
-        temp_file = shutil.make_archive(temp_file, 'zip', temp_dir)
+        temp_file = shutil.make_archive(p_name, 'zip', temp_dir)
         files = {'upload[file]': open(temp_file, 'rb')}
 
         upload_url = baseUrl + '/Common/KiCadUpFile/'
@@ -152,4 +158,16 @@ class PCBWayThread(Thread):
         for key in keys:
             if f.HasProperty(key):
                 return f.GetProperty(key)
+
+    def parse_attr_flag(self, attr, mask):
+        return mask == (attr & mask)
+
+    def parse_attrs(self, attrs):
+        return {} if not isinstance(attrs, int) else {
+            'tht': self.parse_attr_flag(attrs, pcbnew.FP_THROUGH_HOLE),
+            'smd': self.parse_attr_flag(attrs, pcbnew.FP_SMD),
+            'not_in_pos': self.parse_attr_flag(attrs, pcbnew.FP_EXCLUDE_FROM_POS_FILES),
+            'not_in_bom': self.parse_attr_flag(attrs, pcbnew.FP_EXCLUDE_FROM_BOM),
+            'not_in_plan': self.parse_attr_flag(attrs, pcbnew.FP_BOARD_ONLY)
+        }
     
