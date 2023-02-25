@@ -98,6 +98,10 @@ class PCBWayThread(Thread):
             attrs = f.GetAttributes()
             parsed_attrs = self.parse_attrs(attrs)
 
+            if f.HasProperty("dnp"): # new attribute in KiCad 7.0, the value of the attribute does not matter in the 7.0.0 version
+                parsed_attrs["not_in_pos"] = True
+                parsed_attrs["not_in_bom"] = True
+
             mount_type = 'smt' if parsed_attrs['smd'] else 'tht'
             placed = not parsed_attrs['not_in_bom']
 
