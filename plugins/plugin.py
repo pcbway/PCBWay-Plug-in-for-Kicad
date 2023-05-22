@@ -3,7 +3,7 @@ import pcbnew
 
 from .thread import *
 from .result_event import *
-
+from .process import *
 
 class KiCadToPCBWayForm(wx.Frame):
     def __init__(self):

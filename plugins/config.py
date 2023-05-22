@@ -3,7 +3,8 @@ import pcbnew
 baseUrl = 'https://www.pcbway.com'
 #baseUrl = 'http://en.pcbway.com'
 netlistFilename = 'PCBWay_netlist.ipc'
-componentsFilename = 'PCBWay_components.json'
+bomFilename = 'PCBWay_bom.csv'
+positionsFilename = 'PCBWay_positions.csv'
 plotPlan = [
     ("F.Cu", pcbnew.F_Cu, "Top Layer"),
     ("B.Cu", pcbnew.B_Cu, "Bottom Layer"),
@@ -17,5 +18,6 @@ plotPlan = [
     ("B.Mask", pcbnew.B_Mask, "Bottom Soldermask"),
     ("F.Paste", pcbnew.F_Paste, "Top Paste (Stencil)"),
     ("B.Paste", pcbnew.B_Paste, "Bottom Paste (Stencil)"),
-    ("Edge.Cuts", pcbnew.Edge_Cuts, "Board Outline")
+    ("Edge.Cuts", pcbnew.Edge_Cuts, "Board Outline"),
+    ("User.Comments", pcbnew.Cmts_User, "User Comments")
 ]
