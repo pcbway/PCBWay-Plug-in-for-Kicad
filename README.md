@@ -44,7 +44,6 @@ You just need to add the properties in your schematic like the picture shows:
 
 
 
-
 ### About PCBWay
 PCBWay is a Chinese company specializing in PCB prototyping and assembly, devotes to offer one-stop service. The build-time for standard PCBs is 24hrs. Our upgraded material with TG150-160 costs as low as $5/10pcs while our remarkable after-sale services are standing by for any questions you may encounter. Give us a chance and we will give you back a satisfactory result.
 
@@ -53,6 +52,6 @@ As a sponsor of KiCad, we will always support its development.
 ![pcbway and kicad](https://user-images.githubusercontent.com/20063837/161211870-b4a46c17-2e1c-45b4-bfe7-2ab97ade157d.png)
 
 
+### License and attribution
 
-
-
+This plugin is published under the [MIT License](./LICENSE) and is based on [AislerHQ/PushForKiCad](https://github.com/AislerHQ/PushForKiCad).
