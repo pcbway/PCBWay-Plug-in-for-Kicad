@@ -174,8 +174,13 @@ class PCBWayProcess:
     def get_mpn_from_footprint(self, f):
         keys = ['mpn', 'MPN', 'Mpn', 'PCBWay_MPN' ,'part number', 'Part Number', 'Part No.', 'Mfr. Part No.', 'Mfg Part']
         for key in keys:
-            if f.HasProperty(key):
-                return f.GetProperty(key)
+            try:
+                if f.HasField(key):
+                    return f.GetFieldByName(key).GetText()
+            except Exception as e:
+                if f.HasProperty(key):
+                    return f.GetProperty(key)
+
 
     def parse_attr_flag(self, attr, mask):
         return mask == (attr & mask)
