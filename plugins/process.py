@@ -1,11 +1,13 @@
 #https://opensource.org/licenses/MIT 
 
+import pcbnew # type: ignore
 import os
-import json
 import csv
-import re
-from .config import *
 
+from itertools import groupby
+
+from .config import *
+from .utils import *
 
 class PCBWayProcess:
     def __init__(self):
@@ -13,7 +15,16 @@ class PCBWayProcess:
         self.pctl = pcbnew.PLOT_CONTROLLER(self.board)
         self.bom = []
         self.components = []
+    
+    def get_name(self):
+        return self.board.GetFileName()
+        
+    def get_basedir(self):
+        return os.path.dirname(self.board.GetFileName())
 
+    def get_basename(self):
+        return os.path.basename(self.board.GetFileName())
+    
     def get_gerber_file(self, temp_dir):
         settings = self.board.GetDesignSettings()
         settings.m_SolderMaskMargin = 0
@@ -69,6 +80,20 @@ class PCBWayProcess:
 
         footprints.sort(key=lambda x: x.GetReference())
         
+        mpn_keys = get_mpn_keys()
+        pack_keys = get_pack_keys()
+        no_show_keys = [
+            'ki_fp_filters',
+            'DNP',
+            'Reference',
+            'Value',
+            'Datasheet',
+            'Footprint',
+        ]
+        ignore_ext_keys = mpn_keys + pack_keys + no_show_keys
+
+        greater_v8 = is_greater_v8()
+        fp_datas = []
         for i, f in enumerate(footprints):
             try:
                 footprint_name = str(f.GetFPID().GetFootprintName())
@@ -87,14 +112,25 @@ class PCBWayProcess:
             placed = not parsed_attrs['not_in_bom']
 
             rotation = f.GetOrientation().AsDegrees() if hasattr(f.GetOrientation(), 'AsDegrees') else f.GetOrientation() / 10.0
-            designator = f.GetReference()
 
             pos_x = (f.GetPosition()[0] - self.board.GetDesignSettings().GetAuxOrigin()[0]) / 1000000.0
             pos_y = (f.GetPosition()[1] - self.board.GetDesignSettings().GetAuxOrigin()[1]) * -1.0 / 1000000.0
 
-            mpn = self.get_mpn_from_footprint(f)
-
+            designator = f.GetReference()
             value = f.GetValue()
+            mpn = get_mpn_from_footprint(f)
+            pack = get_pack_from_footprint(f)
+            is_dnp = get_is_dnp_from_footprint(f) if greater_v8 else False
+
+            if not footprint_name:
+                footprint_name = ''
+
+            if not pack:
+                pack = ''
+
+            if not mpn:
+                mpn = ''
+
             self.components.append({
                 'pos_x': pos_x,
                 'pos_y': pos_y,
@@ -102,30 +138,134 @@ class PCBWayProcess:
                 'side': layer,
                 'designator': designator,
                 'mpn': mpn,
-                'pack': footprint_name,
+                'pack': pack,
+                'footprint': footprint_name,
                 'value': value,
                 'mount_type': mount_type,
                 'place': placed
             })
+            
+            fp_item_fields = {
+                'designator': designator,
+                'value': value,
+                'footprint': footprint_name,
+                'pack': pack,
+                'mpn': mpn,
+                'DNP': 'Yes' if is_dnp else '',
+                'Mount_Type': mount_type,
+            }
 
-            is_exist_bom = False
+            if greater_v8:
+                footprint_fields = f.GetFieldsText()
+                if footprint_fields:
+                    for k, v in footprint_fields.items():
+                        if k.upper() == 'DNP' or k.upper() == 'MOUNT_TYPE':
+                            k = 'Custom_' + k
+                        if not v or k in ignore_ext_keys:
+                            continue
+                        fp_item_fields[k] = v
 
-            for exist_bom in self.bom:
-                if exist_bom['mpn'] == mpn and exist_bom['pack'] == footprint_name and exist_bom['value'] == value:
-                    exist_bom['designator'] += ', ' + designator
-                    exist_bom['quantity'] += 1
-                    is_exist_bom = True
+            fp_datas.append(fp_item_fields)
 
-            if is_exist_bom == False:
-                self.bom.append({
-                    'designator': designator,
-                    'quantity': 1,
-                    'value': value,
-                    'pack': footprint_name,
-                    'mpn': mpn,
-                    'mount_type': mount_type
-                })
+        fp_data_group = {}
+        for item in fp_datas:
+            designator = item['designator']
+            value = item['value']
+            footprint = item['footprint']
+            pack = item['pack']
+            mpn = item['mpn']
+            is_dnp = item['DNP']
+
+            index = value + '_' + footprint + '_' + pack + '_' + mpn
+            if is_dnp:
+                index = designator + '_' + index
+
+            if index in fp_data_group:
+                fp_data_group[index].append(item)
+            else:
+                fp_data_group[index] = [ item ]
+
+        fixed_columns = [
+            'designator',
+            'quantity',
+            'value',
+            'footprint',
+            'pack',
+            'mpn',
+        ]
+
+        all_columns = [
+            'Designator',
+            'Quantity',
+            'Value',
+            'Footprint',
+            'Package',
+            'MPN',
+        ]
+        rows = []
+        for _key, items in fp_data_group.items():
+            first_item = items[0]
+
+            row_datas = {}
+            row_columns = []
+            designators = []
+            for item in items:
+                designator = item['designator']
+                designators.append(designator)
+
+                for item_key, item_value in item.items():
+                    if item_key in fixed_columns:
+                        continue
+                    if item_key not in all_columns:
+                        all_columns.append(item_key)
+                    if item_key not in row_columns:
+                        row_columns.append(item_key)
+                    if item_key not in row_datas:
+                        row_datas[item_key] = []
+                    row_datas[item_key].append({
+                        'key': designator,
+                        'value': item_value,
+                    })
+
+            for k in row_columns:
+                row_data = row_datas[k]
+                row_data_groupby = {val: list(group) for val, group in groupby(row_data, key=lambda x: x['value'])}
+                item_text = ''
+                if len(row_data_groupby) > 1:
+                    item_text = '; '.join(['[' + ','.join([g['key'] for g in group]) + ']'+ group_key for group_key, group in row_data_groupby.items()])
+                else:
+                    item_text = row_data[0]['value']
+                first_item[k] = item_text
+
+            designator_count = len(designators)
+            designator = ', '.join(designators)
+            
+
+            row = {
+                'Designator': designator,
+                'Quantity': designator_count,
+                'Value': first_item['value'],
+                'Footprint': first_item['footprint'],
+                'Package': first_item['pack'],
+                'MPN': first_item['mpn'],
+            }
+
+            for k in row_columns:
+                if k in first_item:
+                    row[k] = first_item[k]
+
+            rows.append(row)
         
+        for row in rows:
+            newRow = {}
+            for k in all_columns:
+                if k in row:
+                    newRow[k] = row[k]
+                else:
+                    newRow[k] = ''
+            if not greater_v8:
+                del newRow['DNP']
+            self.bom.append(newRow)
        
         if len(self.components) > 0:
             with open((os.path.join(temp_dir, positionsFilename)), 'w', newline='', encoding='utf-8-sig') as outfile:
@@ -142,25 +282,22 @@ class PCBWayProcess:
                 csvobj.writerow(self.bom[0].keys())
 
                 for component in self.bom:
-                    if ('**' not in component['designator']):
+                    if ('**' not in component['Designator']):
                         csvobj.writerow(component.values())
 
 
     def get_gerber_parameter(self):
-        
         boardWidth = pcbnew.ToMM(self.board.GetBoardEdgesBoundingBox().GetWidth())
         boardHeight = pcbnew.ToMM(self.board.GetBoardEdgesBoundingBox().GetHeight())
 
         if hasattr(self.board, 'GetCopperLayerCount'):
             boardLayer = self.board.GetCopperLayerCount()
-        gerberData = {'boardWidth':boardWidth,'boardHeight':boardHeight,'boardLayer':boardLayer}
-        return gerberData
-    
-    def get_name(self):
 
-        p_name = self.board.GetFileName()
-
-        return p_name
+        return {
+            'boardWidth':boardWidth,
+            'boardHeight':boardHeight,
+            'boardLayer':boardLayer,
+        }
 
     def parse_attrs(self, attrs):
         return {} if not isinstance(attrs, int) else {
@@ -170,20 +307,6 @@ class PCBWayProcess:
             'not_in_bom': self.parse_attr_flag(attrs, pcbnew.FP_EXCLUDE_FROM_BOM),
             'not_in_plan': self.parse_attr_flag(attrs, pcbnew.FP_BOARD_ONLY)
         }
-        
-    def get_mpn_from_footprint(self, f):
-        keys = ['mpn', 'MPN', 'Mpn', 'PCBWay_MPN' ,'part number', 'Part Number', 'Part No.', 'Mfr. Part No.', 'Mfg Part']
-        for key in keys:
-            try:
-                if f.HasField(key):
-                    return f.GetFieldByName(key).GetText()
-            except Exception as e:
-                if f.HasProperty(key):
-                    return f.GetProperty(key)
-
 
     def parse_attr_flag(self, attr, mask):
         return mask == (attr & mask)
-
-
-        
