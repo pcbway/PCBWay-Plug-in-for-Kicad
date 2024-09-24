@@ -109,7 +109,11 @@ class PCBWayProcess:
             parsed_attrs = self.parse_attrs(f_attrs)
 
             mount_type = 'smt' if parsed_attrs['smd'] else 'tht'
-            placed = not parsed_attrs['not_in_bom']
+            not_in_bom = parsed_attrs['not_in_bom']
+            not_in_pos = parsed_attrs['not_in_pos']
+
+            if not_in_bom and not_in_pos:
+                continue
 
             rotation = f.GetOrientation().AsDegrees() if hasattr(f.GetOrientation(), 'AsDegrees') else f.GetOrientation() / 10.0
 
@@ -131,19 +135,22 @@ class PCBWayProcess:
             if not mpn:
                 mpn = ''
 
-            self.components.append({
-                'pos_x': pos_x,
-                'pos_y': pos_y,
-                'rotation': rotation,
-                'side': layer,
-                'designator': designator,
-                'mpn': mpn,
-                'pack': pack,
-                'footprint': footprint_name,
-                'value': value,
-                'mount_type': mount_type,
-                'place': placed
-            })
+            if not_in_pos == False:
+                self.components.append({
+                    'pos_x': pos_x,
+                    'pos_y': pos_y,
+                    'rotation': rotation,
+                    'side': layer,
+                    'designator': designator,
+                    'mpn': mpn,
+                    'pack': pack,
+                    'footprint': footprint_name,
+                    'value': value,
+                    'mount_type': mount_type,
+                })
+
+            if not_in_bom:
+                continue
             
             fp_item_fields = {
                 'designator': designator,
