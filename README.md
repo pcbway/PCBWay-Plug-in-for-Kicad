@@ -22,7 +22,7 @@ Just open the "Plugin and Content Manager" from the KiCad main menu an install t
 
 
 ### Manual installation
-You can also download the latest ZIP file from  https://github.com/pcbway/PCBWay-Plug-in-for-Kicad, then open the "Plugin and Content Manager" from the main window of KiCad and install the ZIP file via "Install from File".
+You can also download the latest ZIP file from  https://github.com/pcbway/PCBWay-Plug-in-for-Kicad/releases/download/v1.0.2/KiCadToPCBWay_v1.0.2.zip, then open the "Plugin and Content Manager" from the main window of KiCad and install the ZIP file via "Install from File".
 ![install pcbway plugin](https://user-images.githubusercontent.com/20063837/160970891-4971cb1a-a36a-45bc-b219-93924f0ff070.png)
 
 
