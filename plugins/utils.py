@@ -9,7 +9,6 @@ def get_version():
     # (6.0.0) -> 6.0.0
     if bs.startswith('(') and bs.endswith(')'):
         bs = re.sub(r'^\(|\)$', '', bs)
-
     return float('.'.join(bs.split(".")[0:2]))  # e.g. '8.0.0-r3' -> '8.0'
 
 def is_v6():
@@ -28,17 +27,25 @@ def is_v9():
     version = get_version()
     return version >= 8.99 and version < 9.99
 
+def is_nightly():
+    version = get_version()
+    return version >= 9.99 and version < 10
+
 def is_greater_v8():
     return get_version() >= 7.99
 
 def footprint_has_field(footprint, field_name):
-    if is_greater_v8():
+    if is_nightly():
+        return footprint.HasField(field_name)
+    elif is_greater_v8():
         return footprint.HasFieldByName(field_name)
     else:
         return footprint.HasProperty(field_name)
 
 def footprint_get_field(footprint, field_name):
-    if is_greater_v8():
+    if is_nightly():
+        return footprint.GetField(field_name).GetText()
+    elif is_greater_v8():
         return footprint.GetFieldByName(field_name).GetText()
     else:
         return footprint.GetProperty(field_name)
@@ -94,12 +101,15 @@ def get_value_from_footprint_by_keys(fp, keys):
             return footprint_get_field(fp, key)
 
 def get_mpn_from_footprint(f):
+    print("getting mpn")
     return get_value_from_footprint_by_keys(f, get_mpn_keys())
 
 def get_pack_from_footprint(f):
+    print("getting pack")
     return get_value_from_footprint_by_keys(f, get_pack_keys())
 
 def get_is_dnp_from_footprint(f):
+    print("getting dnp")
     for k in get_dnp_keys():
         if footprint_has_field(f, k):
             return True
