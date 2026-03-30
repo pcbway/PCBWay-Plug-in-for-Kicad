@@ -31,14 +31,21 @@ def is_v9():
 def is_greater_v8():
     return get_version() >= 7.99
 
+def is_greater_v10():
+    return get_version() >= 10.00
+
 def footprint_has_field(footprint, field_name):
-    if is_greater_v8():
+    if is_greater_v10():
+        return footprint.HasField(field_name)
+    elif is_greater_v8():
         return footprint.HasFieldByName(field_name)
     else:
         return footprint.HasProperty(field_name)
 
-def footprint_get_field(footprint, field_name):
-    if is_greater_v8():
+def footprint_get_field(footprint, field_name):    
+    if is_greater_v10():
+        return footprint.GetField(field_name).GetText()
+    elif is_greater_v8():
         return footprint.GetFieldByName(field_name).GetText()
     else:
         return footprint.GetProperty(field_name)
